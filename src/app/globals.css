@@ -1,0 +1,309 @@
+@import "tailwindcss";
+
+:root {
+  /* Brand Colors */
+  --navy: #0B234A;
+  --navy-light: #15376B;
+  --platinum: #BFC5CD;
+  --silver: #D8DCE2;
+  --white: #FFFFFF;
+
+  /* Theme Colors */
+  --background: #FFFFFF;
+  --foreground: #0B234A;
+
+  /* Secondary Shades */
+  --muted: #eef2ff;
+  --border: #dbe4ff;
+  --card: #ffffff;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  /* Brand Color Utilities */
+  --color-navy: var(--navy);
+  --color-navy-light: var(--navy-light);
+  --color-platinum: var(--platinum);
+  --color-silver: var(--silver);
+
+  /* UI */
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-card: var(--card);
+
+  /* Fonts */
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-cormorant);
+
+  /* Text */
+  --text-*: initial;
+  --text-xxs: clamp(0.475rem, 1.5vw, 0.55rem);
+  --text-xs: clamp(0.575rem, 1.5vw, 0.75rem);
+  --text-sm: clamp(0.7rem, 1.6vw, 0.875rem);
+  --text-base: clamp(0.75rem, 1.8vw, 1rem);
+  --text-lg: clamp(0.8rem, 1.9vw, 1.125rem);
+  --text-xl: clamp(0.875rem, 2vw, 1.25rem);
+  --text-2xl: clamp(1rem, 2.3vw, 1.5rem);
+  --text-3xl: clamp(1.25rem, 2.6vw, 1.875rem);
+  --text-4xl: clamp(1.5rem, 3vw, 2.25rem);
+  --text-5xl: clamp(1.75rem, 3.5vw, 3rem);
+  --text-6xl: clamp(2rem, 4vw, 3.75rem);
+  --text-7xl: clamp(2.5rem, 5vw, 4.5rem);
+  --text-8xl: clamp(3rem, 6vw, 6rem);
+  --text-9xl: clamp(3.5rem, 7vw, 8rem);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+
+  font-family: var(--font-inter), sans-serif;
+  font-weight: 400;
+  line-height: 1.6;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Premium Heading Style */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-cormorant), serif;
+  color: var(--navy);
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+/* Selection */
+::selection {
+  background: var(--navy);
+  color: var(--white);
+}
+
+/* Optional Luxury Container */
+.container-premium {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding-inline: 2rem;
+}
+
+
+/* Rich Text Editor Preview & Editor Formatting Styles */
+.rich-text-preview {
+  white-space: pre-wrap;
+  font-family:
+    var(--font-geist-sans),
+    Arial,
+    Helvetica,
+    sans-serif;
+}
+
+.rich-text-preview h1,
+.editor-editable h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  color: var(--foreground);
+  line-height: 1.25;
+}
+
+.rich-text-preview h2,
+.editor-editable h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 0.8rem;
+  margin-bottom: 0.4rem;
+  color: var(--foreground);
+  line-height: 1.3;
+}
+
+.rich-text-preview h3,
+.editor-editable h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 0.6rem;
+  margin-bottom: 0.3rem;
+  color: var(--foreground);
+  line-height: 1.35;
+}
+
+.rich-text-preview p,
+.editor-editable p {
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+}
+
+.rich-text-preview ul,
+.editor-editable ul {
+  list-style-type: disc;
+  padding-left: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.rich-text-preview ol,
+.editor-editable ol {
+  list-style-type: decimal;
+  padding-left: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.rich-text-preview a,
+.editor-editable a {
+  color: #0b2e84;
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.rich-text-preview u,
+.editor-editable u {
+  text-decoration: underline;
+}
+
+.rich-text-preview strong,
+.rich-text-preview b,
+.editor-editable strong,
+.editor-editable b {
+  font-weight: 700;
+}
+
+.rich-text-preview em,
+.rich-text-preview i,
+.editor-editable em,
+.editor-editable i {
+  font-style: italic;
+}
+
+
+/* Contenteditable placeholder styling */
+.editor-editable[data-placeholder]:empty::before {
+  content: attr(data-placeholder);
+  color: var(--foreground);
+  opacity: 0.3;
+  pointer-events: none;
+  position: absolute;
+}
+
+/* Cron command center — subtle live operational motion */
+.cron-live-panel {
+  animation: cron-panel-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.cron-timeline-flow::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 22%;
+  background: linear-gradient(90deg, transparent, #3b82f6, transparent);
+  animation: cron-timeline-sweep 4.8s linear infinite;
+}
+
+.cron-now-marker {
+  transition: left 900ms linear;
+}
+
+.cron-schedule-node {
+  animation: cron-node-breathe 2.8s ease-in-out infinite;
+}
+
+.cron-delay-evening {
+  animation-delay: 1.4s;
+}
+
+.cron-flow-card {
+  animation: cron-card-breathe 5s ease-in-out infinite;
+}
+
+.cron-flow-arrow {
+  animation: cron-arrow-flow 1.5s ease-in-out infinite;
+}
+
+.cron-next-icon {
+  animation: cron-icon-float 3.2s ease-in-out infinite;
+}
+
+.cron-countdown-tick {
+  animation: cron-digit-tick 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.cron-health-dot {
+  animation: cron-health-pulse 2s ease-in-out infinite;
+}
+
+.cron-capacity-flow {
+  background-size: 220% 100%;
+  animation: cron-capacity-shimmer 2.8s linear infinite;
+}
+
+@keyframes cron-panel-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes cron-timeline-sweep {
+  from { transform: translateX(-110%); }
+  to { transform: translateX(470%); }
+}
+
+@keyframes cron-node-breathe {
+  0%, 100% { transform: translateX(-50%) scale(1); }
+  50% { transform: translateX(-50%) scale(1.045); }
+}
+
+@keyframes cron-card-breathe {
+  0%, 100% { transform: translateY(0); box-shadow: 0 0 0 rgba(245, 158, 11, 0); }
+  50% { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(245, 158, 11, 0.07); }
+}
+
+@keyframes cron-arrow-flow {
+  0%, 100% { transform: translateX(-2px); opacity: 0.45; }
+  50% { transform: translateX(3px); opacity: 1; }
+}
+
+@keyframes cron-icon-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-3px) rotate(4deg); }
+}
+
+@keyframes cron-digit-tick {
+  from { opacity: 0.3; transform: translateY(-3px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes cron-health-pulse {
+  0%, 100% { opacity: 0.65; box-shadow: 0 0 0 0 currentColor; }
+  50% { opacity: 1; box-shadow: 0 0 0 3px transparent; }
+}
+
+@keyframes cron-capacity-shimmer {
+  from { background-position: 100% 0; }
+  to { background-position: -120% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cron-live-panel,
+  .cron-timeline-flow::after,
+  .cron-schedule-node,
+  .cron-flow-card,
+  .cron-flow-arrow,
+  .cron-next-icon,
+  .cron-countdown-tick,
+  .cron-health-dot,
+  .cron-capacity-flow {
+    animation: none !important;
+  }
+
+  .cron-now-marker {
+    transition: none;
+  }
+}
