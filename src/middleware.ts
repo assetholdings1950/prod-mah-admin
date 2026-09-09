@@ -81,6 +81,7 @@ export const config = {
     "/investment-plans/:path*",
     "/bonds/:path*",
     "/notifications/:path*",
+    "/email-center/:path*",
     "/jobs/:path*",
   ],
 };

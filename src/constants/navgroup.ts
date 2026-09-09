@@ -53,6 +53,11 @@ export const navGroups: NavGroup_[] = [
                 href: "/notifications",
                 icon: Bell,
             },
+            {
+                name: "Email Center",
+                href: "/email-center",
+                icon: Mail,
+            },
         ],
     },
 
