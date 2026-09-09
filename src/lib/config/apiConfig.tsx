@@ -66,6 +66,13 @@ type ApiEndPoints = {
         delete: (ids: string[]) => string;
         update: string;
     },
+    bonds: {
+        create: string;
+        getList: (page: string, limit: string, search: string, status?: string, riskLevel?: string, couponFrequency?: string) => string;
+        getById: (id: string) => string;
+        delete: (ids: string[]) => string;
+        update: string;
+    },
     planCharges: {
         getByPlanId: (planId: string) => string;
         upsert: string;
@@ -252,6 +259,19 @@ export const API_ENDPOINTS: ApiEndPoints = {
         getById: (id) => `/investment-plans/${id}`,
         delete: (ids) => `/investment-plans?ids=${encodeURIComponent(JSON.stringify(ids))}`,
         update: `/investment-plans/update`,
+    },
+    bonds: {
+        create: "/bonds",
+        getList: (page, limit, search, status?, riskLevel?, couponFrequency?) => {
+            const p = new URLSearchParams({ page, limit, search });
+            if (status) p.set("status", status);
+            if (riskLevel) p.set("riskLevel", riskLevel);
+            if (couponFrequency) p.set("couponFrequency", couponFrequency);
+            return `/bonds?${p.toString()}`;
+        },
+        getById: (id) => `/bonds/${id}`,
+        delete: (ids) => `/bonds?ids=${encodeURIComponent(JSON.stringify(ids))}`,
+        update: "/bonds/update",
     },
     paymentMethods: {
         create: "/payment-methods/admin",

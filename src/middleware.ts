@@ -79,6 +79,7 @@ export const config = {
     "/agents/:path*",
     "/clients/:path*",
     "/investment-plans/:path*",
+    "/bonds/:path*",
     "/notifications/:path*",
     "/jobs/:path*",
   ],

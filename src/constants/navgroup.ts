@@ -20,6 +20,7 @@ import {
     Headset,
     Inbox,
     ChartNoAxesCombined,
+    Landmark,
 } from "lucide-react"
 /* ─────────────────── NAV CONFIG ─────────────────── */
 
@@ -118,6 +119,15 @@ export const navGroups: NavGroup_[] = [
                         href: "/investment-plans/create",
                         icon: PlusCircle,
                     },
+                ],
+            },
+            {
+                name: "Bonds",
+                href: "/bonds",
+                icon: Landmark,
+                subMenu: [
+                    { name: "All Bonds", href: "/bonds/all", icon: Landmark },
+                    { name: "Create Bond", href: "/bonds/create", icon: PlusCircle },
                 ],
             },
             {
