@@ -1,13 +1,15 @@
 import Select from "@/components/common/Select";
-import { Field, Toggle, inputCls } from "./primitives";
+import { CurrentPasswordField, Field, Toggle, inputCls } from "./primitives";
 import { FormState, SetFormField } from "./types";
+import { IClients } from "@/interface/client";
 
 interface Props {
     form: FormState;
     set: SetFormField;
+    client?: IClients | null;
 }
 
-export const AccountTab = ({ form, set }: Props) => (
+export const AccountTab = ({ form, set, client }: Props) => (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         <Field label="Account Status">
             <Select
@@ -44,5 +46,6 @@ export const AccountTab = ({ form, set }: Props) => (
             label="KYC Required"
             description="Force KYC verification before this client can transact"
         />
+        <CurrentPasswordField value={client?.currentPassword} />
     </div>
 );

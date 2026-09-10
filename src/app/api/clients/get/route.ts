@@ -1,4 +1,4 @@
-import apiClient from "@/lib/apiClient";
+import { authClient } from "@/lib/authClient";
 import { API_ENDPOINTS } from "@/lib/config/apiConfig";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -14,7 +14,8 @@ export async function GET(req: NextRequest) {
     const preferredCurrency = searchParams.get("preferredCurrency") ?? undefined;
 
     try {
-        const backendRes = await apiClient.get(
+        const client = await authClient();
+        const backendRes = await client.get(
             API_ENDPOINTS.clients.getClientList(page, limit, search, status, kycStatus, riskProfile, country, preferredCurrency)
         );
 
