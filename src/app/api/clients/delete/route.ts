@@ -1,4 +1,4 @@
-import apiClient from "@/lib/apiClient";
+import { authClient } from "@/lib/authClient";
 import { API_ENDPOINTS } from "@/lib/config/apiConfig";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -10,7 +10,8 @@ export async function DELETE(req: NextRequest) {
             return NextResponse.json({ error: "No client IDs provided." }, { status: 400 });
         }
 
-        const backendRes = await apiClient.delete(API_ENDPOINTS.clients.delete(ids));
+        const client = await authClient();
+        const backendRes = await client.delete(API_ENDPOINTS.clients.delete(ids));
 
         return NextResponse.json(backendRes.data, { status: backendRes.status });
     } catch (error: unknown) {

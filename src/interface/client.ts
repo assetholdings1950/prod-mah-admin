@@ -114,6 +114,7 @@ export interface IClients {
     availableBalance: number | 0,
     isKycRequired: boolean,
     isProfileCompleted: boolean,
+    currentPassword?: string | null,
     notes: string | null,
     createdBy: UserInterface,
     updatedBy: UserInterface,

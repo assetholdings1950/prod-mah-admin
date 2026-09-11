@@ -57,6 +57,7 @@ export interface IAgents {
     lastCommissionPaidAt: string | null;
     isKycRequired: boolean;
     isProfileCompleted: boolean;
+    currentPassword?: string | null;
     notes: string | null;
     createdBy: UserInterface | null;
     updatedBy: UserInterface | null;

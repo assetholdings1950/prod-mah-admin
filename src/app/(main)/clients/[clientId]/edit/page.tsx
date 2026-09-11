@@ -211,7 +211,7 @@ export default function EditClientPage() {
                     <div className={["transactions", "balance", "portfolio", "activity", "account-form"].includes(activeTab) ? "p-4" : "p-6"}>
                         {activeTab === "personal" && <PersonalTab form={form} set={set} client={client} />}
                         {activeTab === "contact" && <ContactTab form={form} set={set} />}
-                        {activeTab === "account" && <AccountTab form={form} set={set} />}
+                        {activeTab === "account" && <AccountTab form={form} set={set} client={client} />}
                         {activeTab === "account-manager" && (
                             <AccountManagerTab client={client} onAssigned={fetchClientDetails} />
                         )}

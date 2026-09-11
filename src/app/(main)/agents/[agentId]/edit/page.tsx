@@ -211,7 +211,7 @@ export default function EditAgentPage() {
                     <div className={["transactions", "balance", "activity"].includes(activeTab) ? "p-4" : "p-6"}>
                         {activeTab === "personal" && <PersonalTab form={form} set={set} agent={agent} />}
                         {activeTab === "contact" && <ContactTab form={form} set={set} />}
-                        {activeTab === "account" && <AccountTab form={form} set={set} />}
+                        {activeTab === "account" && <AccountTab form={form} set={set} agent={agent} />}
                         {activeTab === "kyc" && (
                             <KycTab form={form} set={set} kyc={agent.kycVerification} onPreview={setPreviewUrl} />
                         )}

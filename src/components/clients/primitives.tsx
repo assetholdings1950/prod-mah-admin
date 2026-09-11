@@ -1,5 +1,9 @@
 import {
     BarChart3,
+    Check,
+    Copy,
+    Eye,
+    EyeOff,
     FileText,
     FileSignature,
     History,
@@ -15,6 +19,7 @@ import {
     X,
     ZoomIn,
 } from "lucide-react";
+import { useState } from "react";
 import { Tab } from "./types";
 
 // ─── Class constants ──────────────────────────────────────────
@@ -47,6 +52,65 @@ export const ReadonlyField = ({
         </div>
     </div>
 );
+
+// ─── Current-password field (masked, reveal + copy) ───────────
+export const CurrentPasswordField = ({
+    value,
+    label = "Current Password",
+    hint = "Latest password on record. Captured on sign-up, login, and password resets.",
+}: {
+    value: string | null | undefined;
+    label?: string;
+    hint?: string;
+}) => {
+    const [revealed, setRevealed] = useState(false);
+    const [copied, setCopied] = useState(false);
+
+    const handleCopy = async () => {
+        if (!value) return;
+        try {
+            await navigator.clipboard.writeText(value);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1500);
+        } catch {
+            /* clipboard unavailable — ignore */
+        }
+    };
+
+    return (
+        <div className="flex flex-col gap-1.5 sm:col-span-2">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">{label}</label>
+            {value ? (
+                <div className="flex items-stretch gap-2">
+                    <div className="flex-1 text-sm text-slate-700 bg-slate-100/70 border border-slate-200 rounded-lg px-3 py-2.5 font-mono break-all">
+                        {revealed ? value : "•".repeat(Math.min(value.length, 24))}
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => setRevealed((r) => !r)}
+                        title={revealed ? "Hide" : "Reveal"}
+                        className="shrink-0 w-10 flex items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition"
+                    >
+                        {revealed ? <EyeOff size={15} /> : <Eye size={15} />}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={handleCopy}
+                        title="Copy"
+                        className="shrink-0 w-10 flex items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition"
+                    >
+                        {copied ? <Check size={15} className="text-green-600" /> : <Copy size={15} />}
+                    </button>
+                </div>
+            ) : (
+                <div className="w-full text-sm text-slate-400 italic bg-slate-100/70 border border-slate-200 rounded-lg px-3 py-2.5">
+                    Not recorded yet — appears after this user next logs in or resets their password.
+                </div>
+            )}
+            <p className="text-[11px] text-slate-400">{hint}</p>
+        </div>
+    );
+};
 
 // ─── Image thumbnail (click → full-screen preview) ────────────
 export const ImageThumbnail = ({
