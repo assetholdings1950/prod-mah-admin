@@ -107,13 +107,15 @@ function htmlToPlainText(html: string): string {
     doc.querySelectorAll("a").forEach((link) => {
         const href = link.getAttribute("href") || "";
         const text = link.textContent || "";
-        if (href && href !== text) link.textContent = `${text} (${href})`;
+        if (href && href !== text && !/^mailto:/i.test(href)) link.textContent = `${text} (${href})`;
     });
-    doc.querySelectorAll("li").forEach((li) => li.prepend(doc.createTextNode("• ")));
-    doc.querySelectorAll("p, div, h1, h2, h3, li, blockquote, br").forEach((el) => el.append(doc.createTextNode("\n")));
+    doc.querySelectorAll("li").forEach((li) => li.prepend(doc.createTextNode("- ")));
+    doc.querySelectorAll("br").forEach((br) => br.replaceWith(doc.createTextNode("\n")));
+    doc.querySelectorAll("p, div, h1, h2, h3, h4, li, blockquote").forEach((el) => el.append(doc.createTextNode("\n")));
     return (doc.body.textContent || "")
-        .replace(/\n{3,}/g, "\n\n")
+        .replace(/ /g, " ")
         .replace(/[ \t]+\n/g, "\n")
+        .replace(/\n{3,}/g, "\n\n")
         .trim();
 }
 
@@ -405,7 +407,88 @@ export default function EmailCenterPage() {
                         </div>
                     </div>
                     {composeView !== "minimized" && (
-                        <div className="flex-1 space-y-4 overflow-y-auto p-6"><div className="grid gap-4 sm:grid-cols-2"><label className="space-y-1.5"><span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Display name</span><input value={compose.fromName} onChange={(event) => setCompose({ ...compose, fromName: event.target.value })} className="h-11 w-full rounded-xl border border-slate-200 px-3 text-xs outline-none focus:border-blue-500" /></label><label className="space-y-1.5"><span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">From address</span><span className="flex h-11 overflow-hidden rounded-xl border border-slate-200 bg-white focus-within:border-blue-500"><input value={compose.fromPrefix} onChange={(event) => setCompose({ ...compose, fromPrefix: event.target.value.toLowerCase().replace(/[^a-z0-9._-]/g, "") })} className="min-w-0 flex-1 px-3 text-right text-xs outline-none" /><span className="flex items-center bg-slate-50 px-3 text-xs font-bold text-slate-500">@{config.sendingDomain}</span></span></label></div><label className="block space-y-1.5"><span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">To</span><input value={compose.to} onChange={(event) => setCompose({ ...compose, to: event.target.value })} placeholder="recipient@example.com (separate multiple addresses with commas)" className="h-11 w-full rounded-xl border border-slate-200 px-3 text-xs outline-none focus:border-blue-500" /></label><div className="grid gap-4 sm:grid-cols-2"><label className="space-y-1.5"><span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">CC</span><input value={compose.cc} onChange={(event) => setCompose({ ...compose, cc: event.target.value })} className="h-10 w-full rounded-xl border border-slate-200 px-3 text-xs outline-none focus:border-blue-500" /></label><label className="space-y-1.5"><span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">BCC</span><input value={compose.bcc} onChange={(event) => setCompose({ ...compose, bcc: event.target.value })} className="h-10 w-full rounded-xl border border-slate-200 px-3 text-xs outline-none focus:border-blue-500" /></label></div><label className="block space-y-1.5"><span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Subject</span><input value={compose.subject} onChange={(event) => setCompose({ ...compose, subject: event.target.value })} className="h-11 w-full rounded-xl border border-slate-200 px-3 text-xs outline-none focus:border-blue-500" /></label><div className="space-y-1.5"><span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Message</span><RichTextEditor value={compose.bodyHtml} onChange={(bodyHtml) => setCompose((current) => ({ ...current, bodyHtml }))} placeholder="Write your message…" minHeight="220px" /></div><AttachmentPicker files={composeFiles} onChange={setComposeFiles} /><div className="flex items-center justify-between border-t border-slate-100 pt-4"><p className="flex items-center gap-2 text-[10px] text-slate-400"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />The sending domain is locked for security.</p><button onClick={submitCompose} disabled={sending || !compose.to.trim() || !compose.subject.trim() || isHtmlBodyEmpty(compose.bodyHtml)} className="inline-flex h-11 items-center gap-2 rounded-xl bg-navy px-6 text-xs font-bold text-white shadow-lg disabled:opacity-40">{sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}Send email</button></div></div>
+                        <div className="flex-1 space-y-4 overflow-y-auto p-6">
+                            <div className={`grid gap-4 ${composeView === "maximized" ? "sm:grid-cols-2" : "grid-cols-1"}`}>
+                                <label className="space-y-1.5">
+                                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Display name</span>
+                                    <input
+                                        value={compose.fromName}
+                                        onChange={(event) => setCompose({ ...compose, fromName: event.target.value })}
+                                        className="h-11 w-full rounded-xl border border-slate-200 px-3 text-xs outline-none focus:border-blue-500"
+                                    />
+                                </label>
+                                <label className="space-y-1.5">
+                                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">From address</span>
+                                    <span className="flex h-11 overflow-hidden rounded-xl border border-slate-200 bg-white focus-within:border-blue-500">
+                                        <input
+                                            value={compose.fromPrefix}
+                                            onChange={(event) => setCompose({ ...compose, fromPrefix: event.target.value.toLowerCase().replace(/[^a-z0-9._-]/g, "") })}
+                                            className="min-w-[90px] flex-1 px-3 text-right text-xs outline-none"
+                                        />
+                                        <span className="flex shrink-0 items-center bg-slate-50 px-3 text-xs font-bold text-slate-500">@{config.sendingDomain}</span>
+                                    </span>
+                                </label>
+                            </div>
+                            <label className="block space-y-1.5">
+                                <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">To</span>
+                                <input
+                                    value={compose.to}
+                                    onChange={(event) => setCompose({ ...compose, to: event.target.value })}
+                                    placeholder="recipient@example.com (separate multiple addresses with commas)"
+                                    className="h-11 w-full rounded-xl border border-slate-200 px-3 text-xs outline-none focus:border-blue-500"
+                                />
+                            </label>
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <label className="space-y-1.5">
+                                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">CC</span>
+                                    <input
+                                        value={compose.cc}
+                                        onChange={(event) => setCompose({ ...compose, cc: event.target.value })}
+                                        className="h-10 w-full rounded-xl border border-slate-200 px-3 text-xs outline-none focus:border-blue-500"
+                                    />
+                                </label>
+                                <label className="space-y-1.5">
+                                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">BCC</span>
+                                    <input
+                                        value={compose.bcc}
+                                        onChange={(event) => setCompose({ ...compose, bcc: event.target.value })}
+                                        className="h-10 w-full rounded-xl border border-slate-200 px-3 text-xs outline-none focus:border-blue-500"
+                                    />
+                                </label>
+                            </div>
+                            <label className="block space-y-1.5">
+                                <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Subject</span>
+                                <input
+                                    value={compose.subject}
+                                    onChange={(event) => setCompose({ ...compose, subject: event.target.value })}
+                                    className="h-11 w-full rounded-xl border border-slate-200 px-3 text-xs outline-none focus:border-blue-500"
+                                />
+                            </label>
+                            <div className="space-y-1.5">
+                                <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Message</span>
+                                <RichTextEditor
+                                    value={compose.bodyHtml}
+                                    onChange={(bodyHtml) => setCompose((current) => ({ ...current, bodyHtml }))}
+                                    placeholder="Write your message…"
+                                    minHeight="220px"
+                                />
+                            </div>
+                            <AttachmentPicker files={composeFiles} onChange={setComposeFiles} />
+                            <div className="flex items-center justify-between border-t border-slate-100 pt-4">
+                                <p className="flex items-center gap-2 text-[10px] text-slate-400">
+                                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                                    The sending domain is locked for security.
+                                </p>
+                                <button
+                                    onClick={submitCompose}
+                                    disabled={sending || !compose.to.trim() || !compose.subject.trim() || isHtmlBodyEmpty(compose.bodyHtml)}
+                                    className="inline-flex h-11 items-center gap-2 rounded-xl bg-navy px-6 text-xs font-bold text-white shadow-lg disabled:opacity-40"
+                                >
+                                    {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                                    Send email
+                                </button>
+                            </div>
+                        </div>
                     )}
                 </div>
             </div>
