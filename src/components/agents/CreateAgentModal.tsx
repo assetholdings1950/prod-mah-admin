@@ -167,8 +167,8 @@ export default function CreateAgentModal({ onClose, onCreated }: CreateAgentModa
                             </div>
                         </label>
 
-                        <label>
-                            <span className={labelClass}>Password *</span>
+                        <label className="block pt-2">
+                            <span className={`${labelClass} mt-1 block`}>Password *</span>
                             <div className="relative">
                                 <LockKeyhole className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                                 <input
