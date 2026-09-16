@@ -1,6 +1,7 @@
 import { IAgents } from "@/interface/agent";
-import { AlertTriangle, Eye, Pencil, Trash2, Users, Mail, Phone, Calendar } from "lucide-react";
+import { AlertTriangle, Eye, Pencil, Trash2, Users, Mail, Phone, Calendar, MessageSquare } from "lucide-react";
 import { useState } from "react";
+import Link from "next/link";
 
 // ---------- Agent Table ----------
 interface AgentsTableProps {
@@ -456,6 +457,13 @@ const AgentsTable: React.FC<AgentsTableProps> = ({
                                         {/* Actions */}
                                         <td className="px-4 py-3.5">
                                             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <Link
+                                                    href={`/clients/conversations?search=${encodeURIComponent(agent.agentId || agent.email)}`}
+                                                    className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 border border-transparent hover:border-indigo-100 transition-all cursor-pointer"
+                                                    title="View Agent-Client Conversations"
+                                                >
+                                                    <MessageSquare size={13} />
+                                                </Link>
                                                 <button
                                                     onClick={() => onReviewKyc(agent)}
                                                     className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 border border-transparent hover:border-blue-100 transition-all cursor-pointer"

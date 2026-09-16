@@ -21,6 +21,7 @@ import {
     Inbox,
     ChartNoAxesCombined,
     Landmark,
+    MessageSquare,
 } from "lucide-react"
 /* ─────────────────── NAV CONFIG ─────────────────── */
 
@@ -76,10 +77,21 @@ export const navGroups: NavGroup_[] = [
                         icon: Users,
                     },
                     {
+                        name: "Agent Support Chat",
+                        href: "/agents/conversations",
+                        icon: MessageSquare,
+                    },
+                    {
+                        name: "Agent-Client Chats",
+                        href: "/clients/conversations",
+                        icon: MessageSquare,
+                    },
+                    {
                         name: "Agent Commissions",
                         href: "/agents/commissions",
                         icon: Percent,
                     },
+
                 ],
             },
 
@@ -93,6 +105,11 @@ export const navGroups: NavGroup_[] = [
                         name: "All Clients",
                         href: "/clients/all",
                         icon: Users,
+                    },
+                    {
+                        name: "Client Conversations",
+                        href: "/clients/conversations",
+                        icon: MessageSquare,
                     },
                 ],
             },
