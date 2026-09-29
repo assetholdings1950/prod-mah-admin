@@ -6,6 +6,7 @@ export type Tab =
     | "bank"
     | "wallets"
     | "financial"
+    | "salary"
     | "notes"
     | "transactions"
     | "balance"
@@ -24,7 +25,8 @@ export interface FormState {
     address: string;
     postalCode: string;
     preferredCurrency: string;
-    agentLevel: "basic" | "silver" | "gold" | "diamond";
+    agentLevel: string;
+    commissionTierPolicy: string;
     commissionPercentage: number;
     isCommissionEligible: boolean;
     salaryActivated?: boolean;

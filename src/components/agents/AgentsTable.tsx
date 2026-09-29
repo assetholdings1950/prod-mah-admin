@@ -113,7 +113,7 @@ const KycBadge = ({ status }: { status: IAgents["kycStatus"] }) => {
 
 // ─── Level Badge ──────────────────────────────────────────────
 const LevelBadge = ({ level }: { level: IAgents["agentLevel"] }) => {
-    const map = {
+    const map: Record<string, string> = {
         basic: "bg-orange-50 text-orange-700 border-orange-200",
         silver: "bg-slate-100 text-slate-700 border-slate-200",
         gold: "bg-amber-50 text-amber-800 border-amber-200",

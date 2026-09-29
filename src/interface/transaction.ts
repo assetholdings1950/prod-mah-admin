@@ -16,13 +16,15 @@ export interface TransactionAdminRef {
     email: string;
 }
 
-export type TransactionType = "deposit" | "withdrawal" | "investment" | "earning" | "penalty" | "charge";
+export type TransactionType = "deposit" | "withdrawal" | "investment" | "earning" | "salary" | "penalty" | "charge";
 export type TransactionStatus = "pending" | "completed" | "failed";
 export type TransactionUserModel = "User" | "Agent" | "Client";
 
 export interface TransactionInterface {
     _id: string;
-    userId: string | TransactionUserRef;
+    // A referenced client/agent/user may have been deleted while its financial
+    // transaction record remains for audit history.
+    userId?: string | TransactionUserRef | null;
     userModel: TransactionUserModel;
     type: TransactionType;
     amount: number;

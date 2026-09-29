@@ -21,8 +21,16 @@ export interface IAgents {
     address: string | null;
     postalCode: string | null;
     preferredCurrency: string;
-    agentLevel: "basic" | "silver" | "gold" | "diamond";
+    agentLevel: string;
     commissionPercentage: number;
+    commissionTierPolicy?: {
+        _id: string;
+        name: string;
+        slug: string;
+        commissionRate: number;
+        active: boolean;
+        isDefault: boolean;
+    } | string | null;
     isCommissionEligible: boolean;
     salaryActivated?: boolean;
     isSalaryEligibleThisMonth?: boolean;
@@ -47,6 +55,7 @@ export interface IAgents {
     totalClients: number;
     activeClients: number;
     totalInvestmentVolume: number;
+    managedInvestmentVolume?: number;
     lifetimeBusinessVolume: number;
     totalDeposits: number;
     totalWithdrawals: number;
