@@ -17,7 +17,7 @@ import {
 } from "@/app/(main)/finance/transactions/_components/types";
 
 /* ─── local types ─── */
-type TxType = "deposit" | "withdrawal" | "investment" | "earning";
+type TxType = "deposit" | "withdrawal" | "investment" | "earning" | "salary";
 type TxStatus = "completed" | "pending" | "failed";
 
 interface Props {
@@ -31,6 +31,7 @@ const TYPE_TABS: { value: string; label: string }[] = [
     { value: "withdrawal", label: "Withdrawals" },
     { value: "investment", label: "Investments" },
     { value: "earning", label: "Earnings" },
+    { value: "salary", label: "Salary" },
 ];
 
 const STATUS_OPTIONS: { value: string; label: string; dot: string }[] = [
@@ -90,7 +91,7 @@ function TxRow({ tx, onClick }: { tx: TransactionInterface; onClick: (tx: Transa
     const cc = getCurrencyConfig(tx.currency);
     const TypeIcon = tc.icon;
     const CurrencyIcon = CURRENCY_CONFIG[tx.currency]?.icon;
-    const isInflow = tx.type === "deposit" || tx.type === "earning";
+    const isInflow = tx.type === "deposit" || tx.type === "earning" || tx.type === "salary";
 
     return (
         <tr

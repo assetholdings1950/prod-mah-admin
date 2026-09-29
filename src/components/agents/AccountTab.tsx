@@ -3,13 +3,26 @@ import { CurrentPasswordField, Field, Toggle, inputCls } from "../clients/primit
 import { FormState, SetFormField } from "./types";
 import { IAgents } from "@/interface/agent";
 
+export interface CommissionTierPolicyOption {
+    _id: string;
+    name: string;
+    slug: string;
+    commissionRate: number;
+    active: boolean;
+    isDefault: boolean;
+}
+
 interface Props {
     form: FormState;
     set: SetFormField;
     agent?: IAgents | null;
+    tierPolicies: CommissionTierPolicyOption[];
 }
 
-export const AccountTab = ({ form, set, agent }: Props) => (
+export const AccountTab = ({ form, set, agent, tierPolicies }: Props) => {
+    const selectedPolicy = tierPolicies.find((policy) => policy._id === form.commissionTierPolicy);
+
+    return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         <Field label="Account Status">
             <Select
@@ -19,30 +32,25 @@ export const AccountTab = ({ form, set, agent }: Props) => (
                 options={["pending","active","inactive","suspended","blocked","closed"].map(s => ({ value: s, label: s.charAt(0).toUpperCase() + s.slice(1) }))}
             />
         </Field>
-        <Field label="Agent Level">
+        <Field label="Commission Tier Policy">
             <Select
                 fullWidth
-                value={form.agentLevel}
-                onChange={(v) => set("agentLevel", v as FormState["agentLevel"])}
-                options={[
-                    { value: "basic",    label: "Basic" },
-                    { value: "silver",   label: "Silver" },
-                    { value: "gold",     label: "Gold" },
-                    { value: "diamond",  label: "Diamond" },
-                ]}
+                value={form.commissionTierPolicy}
+                onChange={(v) => set("commissionTierPolicy", v)}
+                options={tierPolicies.map((policy) => ({
+                    value: policy._id,
+                    label: `${policy.name} — ${policy.commissionRate}%${policy.isDefault ? " (default)" : ""}`,
+                }))}
             />
         </Field>
         <Field label="Commission Rate (%)">
             <input
                 type="number"
-                min={0}
-                max={100}
-                step={0.1}
-                className={inputCls}
-                value={form.commissionPercentage}
-                onChange={(e) => set("commissionPercentage", parseFloat(e.target.value) || 0)}
-                placeholder="5"
+                className={`${inputCls} bg-slate-50 text-slate-500`}
+                value={selectedPolicy?.commissionRate ?? form.commissionPercentage}
+                readOnly
             />
+            <p className="mt-1 text-[11px] text-slate-400">Managed by the selected tier policy.</p>
         </Field>
         <Field label="Preferred Currency">
             <input
@@ -67,4 +75,5 @@ export const AccountTab = ({ form, set, agent }: Props) => (
         />
         <CurrentPasswordField value={agent?.currentPassword} />
     </div>
-);
+    );
+};

@@ -18,13 +18,11 @@ export const FinancialTab = ({ agent }: Props) => {
         { label: "Total Commission Paid", value: money(agent.totalCommissionPaid) },
         { label: "Lifetime Business Volume", value: money(agent.lifetimeBusinessVolume) },
         { label: "Total Investment Volume", value: money(agent.totalInvestmentVolume) },
+        { label: "Managed Investment Volume", value: money(agent.managedInvestmentVolume) },
         { label: "Total Deposits", value: money(agent.totalDeposits) },
         { label: "Total Withdrawals", value: money(agent.totalWithdrawals) },
         { label: "Total Referred Clients", value: count(agent.totalClients) },
         { label: "Active Referred Clients", value: count(agent.activeClients) },
-        { label: "Salary Activated", value: agent.salaryActivated ? "Yes" : "No" },
-        { label: "Sales count (this month)", value: count(agent.salesThisMonth) },
-        { label: "Salary Eligible (this month)", value: agent.isSalaryEligibleThisMonth ? "Eligible" : "Not Eligible" },
         { label: "Last Commission Paid At", value: date(agent.lastCommissionPaidAt) },
     ];
 

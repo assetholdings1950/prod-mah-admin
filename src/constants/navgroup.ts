@@ -91,6 +91,11 @@ export const navGroups: NavGroup_[] = [
                         href: "/agents/commissions",
                         icon: Percent,
                     },
+                    {
+                        name: "Commission Policies",
+                        href: "/agents/commission-policies",
+                        icon: Percent,
+                    },
 
                 ],
             },

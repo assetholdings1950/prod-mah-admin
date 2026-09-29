@@ -8,14 +8,10 @@ import { IAgents } from "@/interface/agent";
 import Pagination from "@/components/pagination/pagination";
 import { toastError } from "@/utils/toast-message/taost-message";
 import {
-    Award,
     DollarSign,
     Wallet,
     Users,
     Search,
-    ShieldCheck,
-    Activity,
-    Lock,
     Pencil,
     RefreshCw,
     TrendingUp,
@@ -28,7 +24,7 @@ const perPageOptions = [5, 10, 20, 50];
 
 // ─── Level Badge ──────────────────────────────────────────────
 const LevelBadge = ({ level }: { level: IAgents["agentLevel"] }) => {
-    const map = {
+    const map: Record<string, string> = {
         basic: "bg-orange-50 text-orange-700 border-orange-200",
         silver: "bg-slate-100 text-slate-700 border-slate-200",
         gold: "bg-amber-50 text-amber-800 border-amber-200",
@@ -75,27 +71,22 @@ export default function AgentCommissionsPage() {
 
     // Filters — initialised from URL query params
     const [levelFilter, setLevelFilter] = useState(searchParams.get("agentLevel") ?? "all");
-    const [salaryFilter, setSalaryFilter] = useState(searchParams.get("salaryStatus") ?? "all");
-    const [eligibilityFilter, setEligibilityFilter] = useState(searchParams.get("eligibility") ?? "all");
 
     // Summary Statistics
     const [summaryStats, setSummaryStats] = useState({
         totalEarned: 0,
         availableBalance: 0,
         pendingApprovals: 0,
-        activatedSalaries: 0,
-        eligibleThisMonth: 0
+        managedInvestment: 0,
     });
 
     // Sync active filters → URL
     useEffect(() => {
         const params = new URLSearchParams();
         if (levelFilter && levelFilter !== "all") params.set("agentLevel", levelFilter);
-        if (salaryFilter && salaryFilter !== "all") params.set("salaryStatus", salaryFilter);
-        if (eligibilityFilter && eligibilityFilter !== "all") params.set("eligibility", eligibilityFilter);
         const qs = params.toString();
         router.replace(`/agents/commissions${qs ? `?${qs}` : ""}`, { scroll: false } as Parameters<typeof router.replace>[1]);
-    }, [levelFilter, salaryFilter, eligibilityFilter, router]);
+    }, [levelFilter, router]);
 
     const handleGetAgents = useCallback(async () => {
         setLoading(true);
@@ -111,16 +102,6 @@ export default function AgentCommissionsPage() {
             if (response.data.status) {
                 let fetchedDocs: IAgents[] = response.data.agents?.docs ?? response.data.agents ?? [];
 
-                // Frontend filters for Salary status as backend might not filter it natively via query
-                if (salaryFilter !== "all") {
-                    const activatedTarget = salaryFilter === "activated";
-                    fetchedDocs = fetchedDocs.filter(a => !!a.salaryActivated === activatedTarget);
-                }
-                if (eligibilityFilter !== "all") {
-                    const eligibleTarget = eligibilityFilter === "eligible";
-                    fetchedDocs = fetchedDocs.filter(a => !!a.isSalaryEligibleThisMonth === eligibleTarget);
-                }
-
                 setAgents(fetchedDocs);
                 setTotalDocs(response.data.agents?.totalDocs ?? fetchedDocs.length);
                 setTotalPages(response.data.agents?.totalPages ?? 1);
@@ -130,15 +111,13 @@ export default function AgentCommissionsPage() {
                     acc.totalEarned += curr.totalCommissionEarned ?? 0;
                     acc.availableBalance += curr.availableCommissionBalance ?? 0;
                     acc.pendingApprovals += curr.pendingCommission ?? 0;
-                    if (curr.salaryActivated) acc.activatedSalaries += 1;
-                    if (curr.isSalaryEligibleThisMonth) acc.eligibleThisMonth += 1;
+                    acc.managedInvestment += curr.managedInvestmentVolume ?? 0;
                     return acc;
                 }, {
                     totalEarned: 0,
                     availableBalance: 0,
                     pendingApprovals: 0,
-                    activatedSalaries: 0,
-                    eligibleThisMonth: 0
+                    managedInvestment: 0,
                 });
 
                 setSummaryStats(stats);
@@ -149,7 +128,7 @@ export default function AgentCommissionsPage() {
         } finally {
             setLoading(false);
         }
-    }, [page, limit, search, levelFilter, salaryFilter, eligibilityFilter]);
+    }, [page, limit, search, levelFilter]);
 
     useEffect(() => {
         handleGetAgents();
@@ -166,8 +145,6 @@ export default function AgentCommissionsPage() {
 
     const clearFilters = () => {
         setLevelFilter("all");
-        setSalaryFilter("all");
-        setEligibilityFilter("all");
         setSearchInput("");
         setPage(1);
     };
@@ -176,13 +153,13 @@ export default function AgentCommissionsPage() {
         <div className="w-full h-full flex flex-col space-y-6 p-1 text-foreground">
             <WorksSpaceHeader
                 isButtonVisible={false}
-                subHeading="Monitor partner commission tiers, wallet earnings, and monthly salary targets"
-                heading="Agent Commissions & Salary Tracking"
+                subHeading="Monitor partner commission tiers, credited earnings, and managed investment volume"
+                heading="Agent Commission Tracking"
                 buttonText=""
             />
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {/* Total Earning Volume */}
                 <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm flex items-center gap-4">
                     <div className="bg-indigo-50 text-indigo-600 p-3 rounded-xl border border-indigo-100">
@@ -212,35 +189,17 @@ export default function AgentCommissionsPage() {
                     </div>
                 </div>
 
-                {/* Lifetime Salary Activated Count */}
+                {/* Managed investment volume */}
                 <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm flex items-center gap-4">
                     <div className="bg-orange-50 text-orange-600 p-3 rounded-xl border border-orange-100">
-                        <Award size={20} />
+                        <TrendingUp size={20} />
                     </div>
                     <div>
-                        <span className="text-xs text-slate-400 font-medium block">Salary Activated Partners</span>
+                        <span className="text-xs text-slate-400 font-medium block">Managed Investment Volume</span>
                         <span className="text-lg font-bold text-slate-800 block mt-0.5">
-                            {summaryStats.activatedSalaries} Agents
+                            USD {summaryStats.managedInvestment.toLocaleString("en-US", { minimumFractionDigits: 2 })}
                         </span>
-                        <span className="text-[10px] text-slate-400 block mt-0.5">
-                            Reached lifetime target of ≥ 2 sales
-                        </span>
-                    </div>
-                </div>
-
-                {/* Salary Eligible This Month */}
-                <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm flex items-center gap-4">
-                    <div className="bg-rose-50 text-rose-600 p-3 rounded-xl border border-rose-100">
-                        <Activity size={20} />
-                    </div>
-                    <div>
-                        <span className="text-xs text-slate-400 font-medium block">Salary Eligible (This Month)</span>
-                        <span className="text-lg font-bold text-slate-800 block mt-0.5">
-                            {summaryStats.eligibleThisMonth} Agents
-                        </span>
-                        <span className="text-[10px] text-rose-600 font-semibold block mt-0.5">
-                            Reached monthly target of ≥ 2 sales
-                        </span>
+                        <span className="text-[10px] text-slate-400 block mt-0.5">Current portfolios managed as account manager</span>
                     </div>
                 </div>
             </div>
@@ -279,32 +238,8 @@ export default function AgentCommissionsPage() {
                                 ]}
                             />
 
-                            {/* Salary Status */}
-                            <Select
-                                size="sm"
-                                value={salaryFilter}
-                                onChange={setSalaryFilter}
-                                options={[
-                                    { value: "all",       label: "All Salaries" },
-                                    { value: "activated", label: "Salary Activated" },
-                                    { value: "locked",    label: "Salary Locked" },
-                                ]}
-                            />
-
-                            {/* Eligibility */}
-                            <Select
-                                size="sm"
-                                value={eligibilityFilter}
-                                onChange={setEligibilityFilter}
-                                options={[
-                                    { value: "all",        label: "All Eligibility" },
-                                    { value: "eligible",   label: "Eligible This Month" },
-                                    { value: "ineligible", label: "Ineligible This Month" },
-                                ]}
-                            />
-
                             {/* Clear Filters */}
-                            {(levelFilter !== "all" || salaryFilter !== "all" || eligibilityFilter !== "all" || searchInput) && (
+                            {(levelFilter !== "all" || searchInput) && (
                                 <button
                                     onClick={clearFilters}
                                     className="text-xs text-red-500 hover:text-red-700 underline font-medium px-2 py-2 cursor-pointer"
@@ -333,8 +268,7 @@ export default function AgentCommissionsPage() {
                                 <th className="text-left px-5 py-3.5 whitespace-nowrap">Agent Portal ID</th>
                                 <th className="text-left px-5 py-3.5 whitespace-nowrap">Tier / Rates</th>
                                 <th className="text-left px-5 py-3.5 whitespace-nowrap">Commissions Profile</th>
-                                <th className="text-left px-5 py-3.5 whitespace-nowrap">Salary Activation</th>
-                                <th className="text-left px-5 py-3.5 whitespace-nowrap">Monthly Progress</th>
+                                <th className="text-left px-5 py-3.5 whitespace-nowrap">Investment Managed</th>
                                 <th className="text-left px-5 py-3.5 whitespace-nowrap">Network Stats</th>
                                 <th className="text-center px-5 py-3.5 whitespace-nowrap w-24">Actions</th>
                             </tr>
@@ -343,14 +277,14 @@ export default function AgentCommissionsPage() {
                             {loading ? (
                                 Array.from({ length: limit }).map((_, i) => (
                                     <tr key={i} className="border-b border-slate-50">
-                                        <td colSpan={7} className="px-5 py-4">
+                                        <td colSpan={6} className="px-5 py-4">
                                             <div className="h-4 bg-slate-50 rounded animate-pulse w-full" />
                                         </td>
                                     </tr>
                                 ))
                             ) : agents.length === 0 ? (
                                 <tr>
-                                    <td colSpan={7} className="py-16 text-center">
+                                    <td colSpan={6} className="py-16 text-center">
                                         <div className="flex flex-col items-center gap-2">
                                             <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-400">
                                                 <Filter size={20} />
@@ -391,7 +325,7 @@ export default function AgentCommissionsPage() {
                                                 <LevelBadge level={agent.agentLevel} />
                                                 <span className="text-[10px] text-indigo-700 font-bold bg-indigo-50 border border-indigo-100 px-1.5 py-0.5 rounded flex items-center gap-0.5">
                                                     <Percent size={10} />
-                                                    {agent.commissionPercentage}% Base SIP
+                                                    {agent.commissionPercentage}% Investment Rate
                                                 </span>
                                             </div>
                                         </td>
@@ -413,47 +347,13 @@ export default function AgentCommissionsPage() {
                                             </div>
                                         </td>
 
-                                        {/* Salary Activation */}
+                                        {/* Investment Managed — current portfolios of clients for whom this agent is account manager. */}
                                         <td className="px-5 py-4">
-                                            {agent.salaryActivated ? (
-                                                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full">
-                                                    <ShieldCheck size={12} />
-                                                    Activated
-                                                </span>
-                                            ) : (
-                                                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-400 bg-slate-50 border border-slate-200 px-2 py-0.5 rounded-full">
-                                                    <Lock size={11} />
-                                                    Locked
-                                                </span>
-                                            )}
-                                        </td>
-
-                                        {/* Monthly Progress */}
-                                        <td className="px-5 py-4">
-                                            <div className="space-y-1.5">
-                                                {/* Sales tracker */}
-                                                <div className="flex items-center gap-1.5">
-                                                    <span className="text-[11px] text-slate-500 font-medium">
-                                                        Monthly Sales: {agent.salesThisMonth || 0} / 2
-                                                    </span>
-                                                    {/* Progress bar */}
-                                                    <div className="h-1.5 w-12 bg-slate-100 rounded-full overflow-hidden">
-                                                        <div
-                                                            className={`h-full rounded-full ${agent.isSalaryEligibleThisMonth ? "bg-emerald-500" : "bg-slate-300"}`}
-                                                            style={{ width: `${Math.min(100, ((agent.salesThisMonth || 0) / 2) * 100)}%` }}
-                                                        />
-                                                    </div>
-                                                </div>
-                                                {/* Eligibility badge */}
-                                                {agent.isSalaryEligibleThisMonth ? (
-                                                    <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-1.5 py-0.2 rounded">
-                                                        Eligible for Salary
-                                                    </span>
-                                                ) : (
-                                                    <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-rose-700 bg-rose-50 border border-rose-100 px-1.5 py-0.2 rounded">
-                                                        Not Eligible
-                                                    </span>
-                                                )}
+                                            <div className="space-y-1">
+                                                <p className="text-sm font-bold text-slate-800">
+                                                    USD {(agent.managedInvestmentVolume ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                                                </p>
+                                                <p className="text-[10px] text-slate-400">Current managed portfolios</p>
                                             </div>
                                         </td>
 
@@ -463,10 +363,6 @@ export default function AgentCommissionsPage() {
                                                 <p className="text-slate-700 flex items-center gap-1 text-xs">
                                                     <Users size={12} className="text-slate-400" />
                                                     {agent.totalClients ?? 0} Client{(agent.totalClients ?? 0) !== 1 ? "s" : ""}
-                                                </p>
-                                                <p className="text-[11px] text-slate-400 flex items-center gap-1 font-mono">
-                                                    <TrendingUp size={11} className="text-slate-400" />
-                                                    USD {(agent.totalInvestmentVolume ?? 0).toLocaleString("en-US", { maximumFractionDigits: 0 })}
                                                 </p>
                                             </div>
                                         </td>

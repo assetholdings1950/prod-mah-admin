@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams, useParams } from "next/navigation";
-import { ChevronLeft, Loader2, Save } from "lucide-react";
+import { Banknote, ChevronLeft, Loader2, Save } from "lucide-react";
 import { useAppSelector } from "@/store/hooks/hooks";
 import { IAgents } from "@/interface/agent";
 import appClient from "@/lib/appClient";
@@ -12,11 +12,12 @@ import { FormState, SetFormField, Tab } from "@/components/agents/types";
 import { ImageModal, TABS } from "@/components/clients/primitives";
 import { PersonalTab } from "@/components/agents/PersonalTab";
 import { ContactTab } from "@/components/agents/ContactTab";
-import { AccountTab } from "@/components/agents/AccountTab";
+import { AccountTab, CommissionTierPolicyOption } from "@/components/agents/AccountTab";
 import { KycTab } from "@/components/agents/KycTab";
 import { BankTab } from "@/components/clients/BankTab";
 import { WalletsTab } from "@/components/clients/WalletsTab";
 import { FinancialTab } from "@/components/agents/FinancialTab";
+import { SalaryPaymentsTab } from "@/components/agents/SalaryPaymentsTab";
 import { NotesTab } from "@/components/agents/NotesTab";
 import TransactionHistoryTab from "@/components/clients/TransactionHistoryTab";
 import BalanceTab from "@/components/clients/BalanceTab";
@@ -24,18 +25,25 @@ import ActivityTab from "@/components/clients/ActivityTab";
 
 const VALID_TABS: Tab[] = [
     "personal", "contact", "account", "kyc", "bank", "wallets", "financial", "notes", "transactions", "balance", "activity",
+    "salary",
 ];
 const SAVE_TABS = new Set<Tab>(["personal", "contact", "account", "kyc", "notes"]);
 
 const EMPTY_FORM: FormState = {
     firstName: "", lastName: "", dateOfBirth: "", gender: "male",
     phoneNumber: "", countryCode: "", country: "", state: "", city: "", address: "", postalCode: "",
-    preferredCurrency: "USD", agentLevel: "basic", commissionPercentage: 2, isCommissionEligible: true,
+    preferredCurrency: "USD", agentLevel: "basic", commissionTierPolicy: "", commissionPercentage: 2, isCommissionEligible: true,
     salaryActivated: false, isSalaryEligibleThisMonth: false, salesThisMonth: 0,
     kycStatus: "pending", status: "pending",
     isKycRequired: false, kycRemarks: "",
     notes: "",
 };
+
+const AGENT_TABS = TABS
+    .filter((tab) => (VALID_TABS as string[]).includes(tab.key))
+    .flatMap((tab) => tab.key === "financial"
+        ? [tab, { key: "salary" as Tab, label: "Salary Payments", icon: <Banknote size={14} /> }]
+        : [tab]);
 
 function buildForm(src: IAgents): FormState {
     return {
@@ -52,6 +60,9 @@ function buildForm(src: IAgents): FormState {
         postalCode: src.postalCode ?? "",
         preferredCurrency: src.preferredCurrency ?? "USD",
         agentLevel: src.agentLevel ?? "basic",
+        commissionTierPolicy: typeof src.commissionTierPolicy === "string"
+            ? src.commissionTierPolicy
+            : src.commissionTierPolicy?._id ?? "",
         commissionPercentage: src.commissionPercentage ?? 2,
         isCommissionEligible: src.isCommissionEligible ?? true,
         salaryActivated: src.salaryActivated ?? false,
@@ -81,15 +92,25 @@ export default function EditAgentPage() {
     const [saving, setSaving] = useState(false);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [form, setForm] = useState<FormState>(EMPTY_FORM);
+    const [tierPolicies, setTierPolicies] = useState<CommissionTierPolicyOption[]>([]);
 
     const fetchAgentDetails = useCallback(async () => {
         if (!agentMongoId) return;
         setLoading(true);
         try {
-            const res = await appClient.get(`/api/agents/details?id=${agentMongoId}`);
+            const [res, policiesRes] = await Promise.all([
+                appClient.get(`/api/agents/details?id=${agentMongoId}`),
+                appClient.get("/api/commission-tier-policies"),
+            ]);
             const data: IAgents = res.data?.data ?? res.data?.agent ?? res.data;
+            const policies: CommissionTierPolicyOption[] = policiesRes.data?.policies ?? [];
             setAgent(data);
-            setForm(buildForm(data));
+            setTierPolicies(policies);
+            const nextForm = buildForm(data);
+            if (!nextForm.commissionTierPolicy) {
+                nextForm.commissionTierPolicy = policies.find((policy) => policy.slug === data.agentLevel)?._id ?? "";
+            }
+            setForm(nextForm);
         } catch {
             toastError("Failed to load agent details.");
         } finally {
@@ -192,7 +213,7 @@ export default function EditAgentPage() {
 
                     {/* Tab bar */}
                     <div className="flex border-b border-slate-100 overflow-x-auto">
-                        {TABS.filter(t => (VALID_TABS as string[]).includes(t.key)).map((tab) => (
+                        {AGENT_TABS.map((tab) => (
                             <button
                                 key={tab.key}
                                 onClick={() => setActiveTab(tab.key as Tab)}
@@ -211,13 +232,14 @@ export default function EditAgentPage() {
                     <div className={["transactions", "balance", "activity"].includes(activeTab) ? "p-4" : "p-6"}>
                         {activeTab === "personal" && <PersonalTab form={form} set={set} agent={agent} />}
                         {activeTab === "contact" && <ContactTab form={form} set={set} />}
-                        {activeTab === "account" && <AccountTab form={form} set={set} agent={agent} />}
+                        {activeTab === "account" && <AccountTab form={form} set={set} agent={agent} tierPolicies={tierPolicies} />}
                         {activeTab === "kyc" && (
                             <KycTab form={form} set={set} kyc={agent.kycVerification} onPreview={setPreviewUrl} />
                         )}
                         {activeTab === "bank" && <BankTab clientId={agent._id} userModel="Agent" />}
                         {activeTab === "wallets" && <WalletsTab clientId={agent._id} userModel="Agent" />}
                         {activeTab === "financial" && <FinancialTab agent={agent} />}
+                        {activeTab === "salary" && <SalaryPaymentsTab agentId={agent._id} onCredited={fetchAgentDetails} />}
                         {activeTab === "notes" && <NotesTab notes={form.notes} set={set} />}
                         {activeTab === "transactions" && <TransactionHistoryTab clientId={agent._id} userModel="Agent" />}
                         {activeTab === "balance" && <BalanceTab clientId={agent._id} client={agent} userModel="Agent" />}

@@ -46,6 +46,13 @@ export const TYPE_CONFIG: Record<TransactionType, {
         dot: "bg-amber-400",
         accent: "bg-amber-400",
     },
+    salary: {
+        label: "Salary",
+        icon: DollarSign,
+        chip: "bg-violet-50 text-violet-700 border border-violet-200",
+        dot: "bg-violet-400",
+        accent: "bg-violet-400",
+    },
     penalty: {
         label: "Penalty",
         icon: ShieldAlert,
@@ -211,14 +218,14 @@ export function getInitials(name: string): string {
 
 /* ─── field extractors ─── */
 export function getUserName(userId: TransactionInterface["userId"]): string {
-    if (typeof userId === "string") return "Unknown";
+    if (!userId || typeof userId === "string") return "Deleted user";
     const u = userId as TransactionUserRef;
     const joined = [u.firstName, u.lastName].filter(Boolean).join(" ");
     return (u.fullName ?? joined) || (u.email?.split("@")[0] ?? "Unknown");
 }
 
 export function getUserEmail(userId: TransactionInterface["userId"]): string {
-    if (typeof userId === "string") return "";
+    if (!userId || typeof userId === "string") return "";
     return (userId as TransactionUserRef).email ?? "";
 }
 
