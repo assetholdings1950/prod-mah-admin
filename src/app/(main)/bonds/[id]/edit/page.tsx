@@ -18,6 +18,23 @@ export default function EditBondPage() {
     const [saving, setSaving] = useState(false);
     const set = <K extends keyof BondFormState>(key: K, value: BondFormState[K]) => setForm((prev) => ({ ...prev, [key]: value }));
 
+    const removeDocument = async (field: "offeringDocumentUrl" | "termSheetUrl") => {
+        const response = await appClient.post("/api/bonds/update", {
+            _id: id,
+            ...buildBondPayload({ ...form, [field]: "" }),
+        });
+        if (!response.data?.status) throw new Error(response.data?.message || "Failed to remove bond document.");
+        set(field, "");
+    };
+
+    const saveUploadedDocument = async (field: "offeringDocumentUrl" | "termSheetUrl", url: string) => {
+        const response = await appClient.post("/api/bonds/update", {
+            _id: id,
+            ...buildBondPayload({ ...form, [field]: url }),
+        });
+        if (!response.data?.status) throw new Error(response.data?.message || "Failed to save bond document.");
+    };
+
     useEffect(() => {
         if (!id) return;
         appClient.get("/api/bonds/get", { params: { id } })
@@ -51,7 +68,7 @@ export default function EditBondPage() {
     return (
         <div className="w-full flex flex-col gap-5 p-1 text-foreground">
             <WorksSpaceHeader isButtonVisible={false} subHeading="Bonds" heading="Edit Bond" />
-            <BondForm form={form} set={set} slugEdited setSlugEdited={() => undefined} onBack={() => router.back()} footerActions={
+            <BondForm form={form} set={set} slugEdited setSlugEdited={() => undefined} bondId={id} onDocumentUploaded={saveUploadedDocument} onDocumentRemove={removeDocument} onBack={() => router.back()} footerActions={
                 <button type="button" disabled={saving || form.offeringDocumentUploading || form.termSheetUploading} onClick={save} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-navy text-white text-xs font-bold shadow-md shadow-navy/15 disabled:opacity-50">
                     {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Update Bond
                 </button>

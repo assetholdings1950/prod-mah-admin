@@ -15,6 +15,9 @@ type Props = {
     set: <K extends keyof BondFormState>(key: K, value: BondFormState[K]) => void;
     slugEdited: boolean;
     setSlugEdited: (value: boolean) => void;
+    bondId?: string;
+    onDocumentUploaded?: (field: "offeringDocumentUrl" | "termSheetUrl", url: string) => Promise<void>;
+    onDocumentRemove?: (field: "offeringDocumentUrl" | "termSheetUrl") => Promise<void>;
     onBack: () => void;
     footerActions: React.ReactNode;
 };
@@ -60,7 +63,7 @@ const percentInput = (value: string, onChange: (value: string) => void) => (
     </div>
 );
 
-export default function BondForm({ form, set, slugEdited, setSlugEdited, onBack, footerActions }: Props) {
+export default function BondForm({ form, set, slugEdited, setSlugEdited, bondId, onDocumentUploaded, onDocumentRemove, onBack, footerActions }: Props) {
     const onName = (name: string) => {
         set("name", name);
         if (!slugEdited) set("slug", slugifyBond(name));
@@ -187,18 +190,24 @@ export default function BondForm({ form, set, slugEdited, setSlugEdited, onBack,
                                     value={form.offeringDocumentUrl}
                                     documentKey="offering-document"
                                     bondSlug={form.slug}
+                                    bondId={bondId}
                                     uploading={form.offeringDocumentUploading}
                                     onUploadingChange={(value) => set("offeringDocumentUploading", value)}
                                     onChange={(value) => set("offeringDocumentUrl", value)}
+                                    onUploaded={onDocumentUploaded ? (url) => onDocumentUploaded("offeringDocumentUrl", url) : undefined}
+                                    onRemove={onDocumentRemove ? () => onDocumentRemove("offeringDocumentUrl") : undefined}
                                 />
                                 <BondDocumentUpload
                                     label="Term Sheet"
                                     value={form.termSheetUrl}
                                     documentKey="term-sheet"
                                     bondSlug={form.slug}
+                                    bondId={bondId}
                                     uploading={form.termSheetUploading}
                                     onUploadingChange={(value) => set("termSheetUploading", value)}
                                     onChange={(value) => set("termSheetUrl", value)}
+                                    onUploaded={onDocumentUploaded ? (url) => onDocumentUploaded("termSheetUrl", url) : undefined}
+                                    onRemove={onDocumentRemove ? () => onDocumentRemove("termSheetUrl") : undefined}
                                 />
                             </div>
                         </div>

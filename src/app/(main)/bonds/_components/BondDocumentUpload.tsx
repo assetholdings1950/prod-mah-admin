@@ -1,7 +1,7 @@
 "use client";
 
 import { ChangeEvent, useRef, useState } from "react";
-import { ExternalLink, FileCheck2, Loader2, Trash2, UploadCloud } from "lucide-react";
+import { Download, FileCheck2, Loader2, Trash2, UploadCloud } from "lucide-react";
 import { uploadAdminDocument } from "@/cloudionary-helpers/adminDocumentUpload";
 import { toastError, toastSuccess } from "@/utils/toast-message/taost-message";
 
@@ -17,9 +17,12 @@ type Props = {
     value: string;
     documentKey: "offering-document" | "term-sheet";
     bondSlug: string;
+    bondId?: string;
     uploading: boolean;
     onUploadingChange: (uploading: boolean) => void;
     onChange: (url: string) => void;
+    onUploaded?: (url: string) => Promise<void>;
+    onRemove?: () => Promise<void>;
 };
 
 const fileNameFromUrl = (url: string) => {
@@ -32,11 +35,13 @@ const fileNameFromUrl = (url: string) => {
 };
 
 export default function BondDocumentUpload({
-    label, value, documentKey, bondSlug, uploading, onUploadingChange, onChange,
+    label, value, documentKey, bondSlug, bondId, uploading, onUploadingChange, onChange, onUploaded, onRemove,
 }: Props) {
     const inputRef = useRef<HTMLInputElement>(null);
     const [progress, setProgress] = useState(0);
     const [localFileName, setLocalFileName] = useState("");
+    const [downloading, setDownloading] = useState(false);
+    const [removing, setRemoving] = useState(false);
 
     const chooseFile = () => {
         if (!bondSlug.trim()) {
@@ -63,6 +68,7 @@ export default function BondDocumentUpload({
         setProgress(0);
         try {
             const url = await uploadAdminDocument(file, `${bondSlug}-${documentKey}`, setProgress);
+            if (onUploaded) await onUploaded(url);
             setLocalFileName(file.name);
             onChange(url);
             toastSuccess(`${label} uploaded successfully.`);
@@ -70,6 +76,56 @@ export default function BondDocumentUpload({
             toastError(error instanceof Error ? error.message : "Document upload failed.");
         } finally {
             onUploadingChange(false);
+        }
+    };
+
+    const download = async () => {
+        if (!bondId) {
+            toastError("Save the bond before downloading its document.");
+            return;
+        }
+
+        setDownloading(true);
+        try {
+            const response = await fetch(`/api/bonds/${encodeURIComponent(bondId)}/documents/${documentKey}`);
+            if (!response.ok) {
+                const body = await response.json().catch(() => null) as { message?: string } | null;
+                throw new Error(body?.message || "Document download failed.");
+            }
+            const blob = await response.blob();
+            const requestedName = fileNameFromUrl(value) || `${bondSlug}-${documentKey}`;
+            const objectUrl = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = objectUrl;
+            link.download = requestedName;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(objectUrl);
+            toastSuccess(`${label} downloaded successfully.`);
+        } catch (error) {
+            toastError(error instanceof Error ? error.message : `${label} download failed. Please try again.`);
+        } finally {
+            setDownloading(false);
+        }
+    };
+
+    const remove = async () => {
+        if (!onRemove) {
+            setLocalFileName("");
+            onChange("");
+            return;
+        }
+
+        setRemoving(true);
+        try {
+            await onRemove();
+            setLocalFileName("");
+            toastSuccess(`${label} removed from this bond.`);
+        } catch {
+            toastError(`Could not remove ${label.toLowerCase()}. Please try again.`);
+        } finally {
+            setRemoving(false);
         }
     };
 
@@ -87,12 +143,12 @@ export default function BondDocumentUpload({
                         <p className="truncate text-xs font-bold text-navy">{localFileName || fileNameFromUrl(value)}</p>
                         <p className="mt-0.5 text-[10px] font-medium text-emerald-600">Uploaded to Cloudinary</p>
                     </div>
-                    <a href={value} target="_blank" rel="noreferrer" title="Open document" className="p-2 text-slate-400 hover:text-navy transition-colors">
-                        <ExternalLink size={15} />
-                    </a>
-                    <button type="button" onClick={chooseFile} disabled={uploading} className="text-[11px] font-bold text-navy hover:underline disabled:opacity-50">Replace</button>
-                    <button type="button" onClick={() => { setLocalFileName(""); onChange(""); }} disabled={uploading} title="Remove document" className="p-2 text-slate-400 hover:text-red-500 transition-colors disabled:opacity-50">
-                        <Trash2 size={15} />
+                    <button type="button" onClick={() => void download()} disabled={uploading || downloading || !bondId} title={bondId ? "Download document" : "Save the bond before downloading"} className="p-2 text-slate-400 hover:text-navy transition-colors disabled:cursor-not-allowed disabled:opacity-40">
+                        {downloading ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
+                    </button>
+                    <button type="button" onClick={chooseFile} disabled={uploading || removing} className="text-[11px] font-bold text-navy hover:underline disabled:opacity-50">Replace</button>
+                    <button type="button" onClick={() => void remove()} disabled={uploading || removing} title="Remove document" className="p-2 text-slate-400 hover:text-red-500 transition-colors disabled:opacity-50">
+                        {removing ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} />}
                     </button>
                 </div>
             ) : (
